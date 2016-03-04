@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(){
-printf("testing");	
+printf("testing from Tram");	
 	return 0;
 }
 
