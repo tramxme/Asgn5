@@ -14,7 +14,7 @@ int validPT(pt_entry *pt){
 
 int main(int argc, char **argv){
    int v = 0, h = 0, p = 0, s = 0;
-   int part, sub;
+   int part = -1, sub = -1;
    char imagefile[MAX_LENGTH], path[MAX_LENGTH];
    char *ptr;
    int c, res;
@@ -26,7 +26,8 @@ int main(int argc, char **argv){
       "-h   help    --- print usage information and exit\n"
       "-v   verbose --- increase verbosity level";
 
-   pt_entry *pt = calloc(sizeof(pt_entry), 1);
+   pt_entry *pt = calloc(sizeof(pt_entry), 4);
+   superblock *sBlock = calloc(sizeof(superblock), 1);
 
    //TODO: error catching when necessary info is not provided
    if (argc == 1){
@@ -46,10 +47,23 @@ int main(int argc, char **argv){
             case 'p':
                p = 1;
                part = strtol(optarg, &ptr, 10);
+               if (part >= MAX_PART){
+                  perror("Cannot have more than 4 partitions");
+                  return EXIT_FAILURE;
+               }
                break;
             case 's':
                s = 1;
                sub =  strtol(optarg, &ptr, 10);
+               if (part < 0 && sub >= 0){
+                  perror("You cannot have subpartition without partition");
+                  return EXIT_FAILURE;
+               }
+
+               if (sub >= MAX_PART){
+                  perror("Cannot have more than 4 partitions");
+                  return EXIT_FAILURE;
+               }
                break;
          }
       }
@@ -63,34 +77,49 @@ int main(int argc, char **argv){
    }
 
    image = fopen(imagefile, "r");
-   if ((res = fseek(image, PART_OFFSET, SEEK_SET)) < 0){
-      perror("fseek failed");
-      return EXIT_FAILURE;
+
+   /* Partitioned image */
+   if (part >= 0){
+      if ((res = fseek(image, PART_OFFSET, SEEK_SET)) < 0){
+         perror("fseek failed");
+         return EXIT_FAILURE;
+      }
+
+      fwrite(pt, sizeof(pt_entry), 4, image);
+
+      /* Validate the partition table */
+      if (!validPT(pt)){
+         perror("Not valid parition table");
+         return EXIT_FAILURE;
+      }
+
+      /* Validate MINIX parition */
+      if (pt[part].type == MINIX_PART){
+         printf("This is minix partition\n");
+      }
+      else{
+         perror("This is not a MINIX partition\n");
+         return EXIT_FAILURE;
+      }
+   }
+   /* If no partition specified */
+   else {
+      if ((res = fseek(image, SUPERBLOCK_OFFSET, SEEK_SET)) < 0){
+         perror("fseek failed");
+         return EXIT_FAILURE;
+      }
+
+      fwrite(sBlock, sizeof(superblock), 1, image);
+
+      if (sBlock->magic != MINIX_MAGIC){
+         printf("Bad magic number. (0x%4x)\n", sBlock->magic);
+         printf("This doesn't look like a MINIX filesystem.\n");
+         return EXIT_FAILURE;
+      }
    }
 
-   fwrite(pt, sizeof(pt_entry), 1, image);
-
-   if (!validPT(pt)){
-      perror("Not valid parition table");
-      return EXIT_FAILURE;
-   }
-
-   /*
-   printf("Open file successfully\n");
-   printf("type partition %x\n", pt->type);
-   printf("size %d\n", pt->size);
-   */
-
-   /*
-   if (pt->type == MINIX_PART){
-      printf("This is minix partition\n");
-   }
-   else{
-      perror("This is not a MINIX partition\n");
-      return EXIT_FAILURE;
-   }
-   */
-
+   free(pt);
+   free(sBlock);
    fclose(image);
    return 0;
 }

@@ -2,6 +2,9 @@
 
 /* Our Constants */
 #define MAX_LENGTH 1000
+#define MAX_PART 4
+#define MAX_NAME_LEN 60
+#define SUPERBLOCK_OFFSET 1024
 
 /*Minix Constants*/
 #define BOOT_MAGIC      0x80
@@ -76,3 +79,8 @@ typedef struct inode {
    uint32_t two_indirect;
    uint32_t unused;
 } inode;
+
+typedef struct directory_entry{
+   uint32_t inode; /* inode number */
+   unsigned char name[MAX_NAME_LEN]; /* Filename string */
+}dir_entry;
