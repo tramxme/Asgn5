@@ -3,8 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "const.h"
-#include "minixStruct.h"
+#include "minfs.h"
 
 int main(int argc, char **argv){
    int v = 0, h = 0, p = 0, s = 0;

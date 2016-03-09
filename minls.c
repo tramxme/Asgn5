@@ -3,14 +3,13 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "const.h"
-#include "minixStruct.h"
+#include "minfs.h"
 
-int validPT(partition_table *pt){
+int validPT(pt_entry *pt){
    int *i, *j;
    *i = *((char *) pt + BYTE510);
    *j = *((char *) pt + BYTE511);
-   return (*i == SIG1 && *j == SIG2);
+   return (*i == VALID_PT_510 && *j == VALID_PT_511);
 }
 
 int main(int argc, char **argv){
@@ -26,7 +25,7 @@ int main(int argc, char **argv){
       "-h   help    --- print usage information and exit\n"
       "-v   verbose --- increase verbosity level";
 
-   partition_table *pt = calloc(sizeof(partition_table), 1);
+   pt_entry *pt = calloc(sizeof(pt_entry), 1);
 
    //TODO: error catching when necessary info is not provided
    if (argc == 1){
@@ -63,12 +62,12 @@ int main(int argc, char **argv){
    }
 
    image = fopen(imagefile, "r");
-   if ((res = fseek(image, PTLOC, SEEK_SET)) < 0){
+   if ((res = fseek(image, PART_OFFSET, SEEK_SET)) < 0){
       perror("fseek failed");
       return EXIT_FAILURE;
    }
 
-   fwrite(pt, sizeof(partition_table), 1, image);
+   fwrite(pt, sizeof(pt_entry), 1, image);
 
    if (!validPT(pt)){
       perror("Not valid parition table");

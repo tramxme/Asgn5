@@ -1,8 +1,13 @@
 #include <stdint.h>
 
+/* Our Constants */
+#define MAX_LENGTH 1000
+
 /*Minix Constants*/
 #define BOOT_MAGIC      0x80
 #define MINIX_PART      0x81
+#define BYTE510 510
+#define BYTE511 511
 #define VALID_PT_510    0x55
 #define VALID_PT_511    0xAA
 #define PART_OFFSET     0x1BE
