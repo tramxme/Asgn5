@@ -1,11 +1,17 @@
-GCC = gcc
-FLAGS = -Wall -Werror
+CC = gcc
+FLAGS = -Wall -Werror -g
 
 all: minls minget
 
-minls: minls.c
-	$(CC) $(FLAGS) minls.c -o minls
+minls: minls.o
+	$(CC) $(FLAGS) minls.o -o minls
 
-minget: minget.c
-	$(CC) $(FLAGS) minget.c -o minget
+minls.o: minls.c
+	$(CC) $(FLAGS) -c minls.c -o minls.o
+
+minget: minget.o
+	$(CC) $(FLAGS) minget.o -o minget
+
+minget.o: minget.c
+	$(CC) $(FLAGS) -c minget.c -o minget.o
 

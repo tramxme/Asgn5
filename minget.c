@@ -9,6 +9,7 @@ int main(int argc, char **argv){
    int v = 0, h = 0, p = 0, s = 0;
    int part, sub;
    char imagefile[MAX_LENGTH], srcpath[MAX_LENGTH], dstpath[MAX_LENGTH];
+   char *ptr;
    int c;
    char *usage = "usage: minget   "
       "[ -v ] [ -p num ] ] imagefile srcpath [ dstpath ]\n"
@@ -34,11 +35,11 @@ int main(int argc, char **argv){
                return 0;
             case 'p':
                p = 1;
-               part = (int) optarg;
+               part = strtol(optarg, &ptr, 10);
                break;
             case 's':
                s = 1;
-               sub = (int) optarg;
+               sub = strtol(optarg, &ptr, 10);
                break;
          }
       }

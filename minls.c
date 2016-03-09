@@ -6,16 +6,17 @@
 #include "minfs.h"
 
 int validPT(pt_entry *pt){
-   int *i, *j;
-   *i = *((char *) pt + BYTE510);
-   *j = *((char *) pt + BYTE511);
-   return (*i == VALID_PT_510 && *j == VALID_PT_511);
+   int i, j;
+   i = *((char *) pt + BYTE510);
+   j = *((char *) pt + BYTE511);
+   return (i == VALID_PT_510 && j == VALID_PT_511);
 }
 
 int main(int argc, char **argv){
    int v = 0, h = 0, p = 0, s = 0;
    int part, sub;
    char imagefile[MAX_LENGTH], path[MAX_LENGTH];
+   char *ptr;
    int c, res;
    FILE *image;
    char *usage = "usage: minls   [ -v ] [ -p num ] ] imagefile [ path ]\n"
@@ -44,11 +45,11 @@ int main(int argc, char **argv){
                return 0;
             case 'p':
                p = 1;
-               part = (int) optarg;
+               part = strtol(optarg, &ptr, 10);
                break;
             case 's':
                s = 1;
-               sub = (int) optarg;
+               sub =  strtol(optarg, &ptr, 10);
                break;
          }
       }
