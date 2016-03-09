@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-
-#define MAX_LENGTH 1000
+#include "const.h"
+#include "minixStruct.h"
 
 int main(int argc, char **argv){
    int v = 0, h = 0, p = 0, s = 0;
