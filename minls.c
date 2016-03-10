@@ -248,12 +248,14 @@ int main(int argc, char **argv){
    }
 
    /* Find the root inode */
-   if ((res = fseek(image, offset + SUPERBLOCK_OFFSET * 2 +
-               (sBlock->i_blocks + sBlock->z_blocks) * sBlock->blocksize,
+   if ((res = fseek(image, offset +
+               (sBlock->i_blocks + sBlock->z_blocks + 2) * sBlock->blocksize,
                SEEK_SET)) < 0){
       perror("fseek failed");
       return EXIT_FAILURE;
    }
+
+   printf("sizeof(inode) %ld\n", sizeof(inode));
 
    fread(Inode, sizeof(inode), 1, image);
    zonesize = sBlock->blocksize << sBlock->log_zone_size;
