@@ -96,17 +96,24 @@ void printInode(inode *fInode){
          free(perm);
 }
 
-/*
-void printFiles(FILE *in, char *path, inode *fInode, uint16_t zonesize){
+void printFiles(FILE *in, int offset, char *path, inode *fInode, uint16_t zonesize){
    printf("%s\n", path);
 
    int i = 0;
-   dir_entry *dirEntry = calloc(sizeof(dir_entry), fInode->size/zonesize + 1);
+   dir_entry *dirEntry = calloc(sizeof(dir_entry), fInode->size/DIR_ENTRY_SIZE);
 
-   for (i = 0; i < DIRECT_ZONES && fInode->zone[i] != 0; i++){
+   /* Root directory */
+   fseek(in, offset + fInode->zone[0] * zonesize, SEEK_SET);
+   fread(dirEntry, sizeof(dir_entry), fInode->size/DIR_ENTRY_SIZE, in);
+
+   for(i = 0; i < fInode->size/DIR_ENTRY_SIZE; i++){
+      if (dirEntry[i].inode != 0){
+         printf("inode number %u - filename %s\n", dirEntry[i].inode, dirEntry[i].name);
+      }
    }
+
+   free(dirEntry);
 }
-*/
 
 int main(int argc, char **argv){
    int v = 0, h = 0, p = 0, s = 0;
@@ -260,6 +267,12 @@ int main(int argc, char **argv){
    fread(Inode, sizeof(inode), 1, image);
    zonesize = sBlock->blocksize << sBlock->log_zone_size;
 
+   if (strlen(path) == 0){
+      strcpy(path, "/:\0");
+   }
+
+   printFiles(image, offset, path, Inode, zonesize);
+
    if (v){
       printf("\n");
       printSuperblock(sBlock);
@@ -269,10 +282,6 @@ int main(int argc, char **argv){
 
 
    /*
-   printInode(Inode);
-   zonesize = sBlock->blocksize << sBlock->log_zone_size;
-
-
    if (strlen(path) == 0){
       strcpy(path, "/:\0");
    }
