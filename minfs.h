@@ -36,7 +36,7 @@
 #define OTHER_WR_MASK   0000002
 #define OTHER_EXE_MASK  0000001
 
-typedef struct partition_table_entry {
+typedef struct __attribute__((__packed__)) partition_table_entry {
    uint8_t bootind;       /*Boot magic number (0x80 if bootable)*/
    uint8_t start_head;    /*start of partition in CHS*/
    uint8_t start_sec;
@@ -49,7 +49,7 @@ typedef struct partition_table_entry {
    uint32_t size;         /*size of partition (in sectors)*/
 } pt_entry;
 
-typedef struct superblock {
+typedef struct __attribute__((__packed__)) superblock {
    uint32_t ninodes;       /*number inodes in this filesystem*/
    uint16_t pad1;          /*make things line up properly*/
    int16_t i_blocks;       /*# of blocks used by inode bit map*/
@@ -65,7 +65,7 @@ typedef struct superblock {
    uint8_t subversion;      /*filesystem sub-version*/
 } superblock;
 
-typedef struct inode {
+typedef struct __attribute__((__packed__)) inode {
    uint16_t mode;          /*mode*/
    uint16_t links;         /*number of links*/
    uint16_t uid;
@@ -80,7 +80,7 @@ typedef struct inode {
    uint32_t unused;
 } inode;
 
-typedef struct directory_entry{
+typedef struct __attribute__((__packed__)) directory_entry{
    uint32_t inode; /* inode number */
    unsigned char name[MAX_NAME_LEN]; /* Filename string */
 }dir_entry;

@@ -1,1 +1,7 @@
 This is our README
+1) If you want you can find a way to format the printf like his (align left and right)
+2) I'm stuck on trying to get the first inode structure
+3) Once you get the inode you can start on listing the directory
+4) Error handling
+5) Clean up code
+
