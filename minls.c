@@ -132,7 +132,7 @@ int main(int argc, char **argv){
    //TODO: error catching when necessary info is not provided
    if (argc == 1){
       printf("%s\n", usage);
-      return 0;
+      return EXIT_FAILURE;
    }
    else {
       while ((c = getopt(argc, argv, "vhp:s:")) > 0){
@@ -143,7 +143,7 @@ int main(int argc, char **argv){
             case 'h':
                h = 1;
                printf("%s\n", usage);
-               return 0;
+               return EXIT_FAILURE;
             case 'p':
                p = 1;
                part = strtol(optarg, &ptr, 10);
