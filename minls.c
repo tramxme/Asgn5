@@ -207,7 +207,8 @@ int main(int argc, char **argv){
             return EXIT_FAILURE;
          }
          /* Get the subpartition table */
-         if ((res = fseek(image, PART_OFFSET + pt[part].lFirst * SECTOR_SIZE, SEEK_SET)) < 0){
+         if ((res = fseek(image, PART_OFFSET + pt[part].lFirst * SECTOR_SIZE,
+                     SEEK_SET)) < 0){
             perror("fseek failed");
             return EXIT_FAILURE;
          }
