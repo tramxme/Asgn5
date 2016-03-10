@@ -62,7 +62,7 @@ typedef struct superblock {
    int16_t magic;          /*magic number*/
    int16_t pad3;           /*make things line up again*/
    uint16_t blocksize;     /*block size in bytes*/
-   uint8_t buversion;      /*filesystem sub-version*/
+   uint8_t subversion;      /*filesystem sub-version*/
 } superblock;
 
 typedef struct inode {

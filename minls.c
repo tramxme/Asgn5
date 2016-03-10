@@ -12,6 +12,91 @@ int validPT(pt_entry *pt){
    return (i == VALID_PT_510 && j == VALID_PT_511);
 }
 
+void printSuperblock(superblock *sp){
+   uint16_t zonesize = sp->blocksize << sp->log_zone_size;
+   printf("Superblock Content:\n"
+          "Stored Fields:\n"
+          "  ninodes %d\n"
+          "  i_blocks %d\n"
+          "  z_blocks %d\n"
+          "  firstdata %d\n"
+          "  log_zone_size %d (zone size: %d)\n"
+          "  max_file %d\n"
+          "  magic 0x%4x\n"
+          "  zones %d\n"
+          "  blocksize %d"
+          "  subversion %d\n", sp->ninodes, sp->i_blocks, sp->z_blocks,
+          sp->firstdata, sp->log_zone_size, zonesize, sp->max_file, sp->magic,
+          sp->zones, sp->blocksize, sp->subversion);
+}
+
+char* getPerm(int num){
+   char *res = "----------", *temp;
+   temp = res;
+
+   if (num & DIR_MASK){
+      *temp++ = 'd';
+   }
+   if (num & OWNER_RD_MASK){
+      *temp++ = 'r';
+   }
+   if (num & OWNER_WR_MASK){
+      *temp++ = 'w';
+   }
+   if (num & OWNER_EXE_MASK){
+      *temp++ = 'x';
+   }
+   if (num & GROUP_RD_MASK){
+      *temp++ = 'r';
+   }
+   if (num & GROUP_WR_MASK){
+      *temp++ = 'w';
+   }
+   if (num & GROUP_EXE_MASK){
+      *temp++ = 'x';
+   }
+   if (num & OTHER_RD_MASK){
+      *temp++ = 'r';
+   }
+   if (num & OTHER_WR_MASK){
+      *temp++ = 'w';
+   }
+   if (num & OTHER_EXE_MASK){
+      *temp++ = 'x';
+   }
+   return res;
+}
+
+void printInode(inode *fInode){
+   printf("File inode:\n"
+          "  uint16_t mode 0x%4x (%s)\n"
+          "  uint16_t links %d\n"
+          "  uint16_t uid %d\n"
+          "  uint16_t gid %d\n"
+          "  uint32_t size %d\n"
+          "  uint32_t atime %d --- \n" //TODO Add time
+          "  uint32_t mtime %d --- \n" //TODO Add time
+          "  uint32_t ctime %d --- \n\n" //TODO Add time
+          "  Direct zones:\n"
+          "              zone[0]   = %d\n"
+          "              zone[1]   = %d\n"
+          "              zone[2]   = %d\n"
+          "              zone[3]   = %d\n"
+          "              zone[4]   = %d\n"
+          "              zone[5]   = %d\n"
+          "              zone[6]   = %d\n"
+          "  uint32_t    indirect %d\n"
+          "  uint32_t    double %d\n"
+          , fInode->mode, getPerm(fInode->mode), fInode->links, fInode->uid,
+          fInode-> gid, fInode->size, fInode->atime, fInode->mtime,
+          fInode-> ctime, fInode->zone[0], fInode->zone[1], fInode->zone[2],
+          fInode->zone[3], fInode->zone[4], fInode->zone[5], fInode->zone[6],
+          fInode->indirect, fInode->two_indirect);
+}
+
+void printDir(){
+}
+
 int main(int argc, char **argv){
    int v = 0, h = 0, p = 0, s = 0;
    int part = -1, sub = -1;
