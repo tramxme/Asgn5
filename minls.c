@@ -22,7 +22,7 @@ void printSuperblock(superblock *sp){
           "  firstdata %d\n"
           "  log_zone_size %d (zone size: %d)\n"
           "  max_file %d\n"
-          "  magic 0x%4x\n"
+          "  magic 0x%04x\n"
           "  zones %d\n"
           "  blocksize %d"
           "  subversion %d\n", sp->ninodes, sp->i_blocks, sp->z_blocks,
@@ -69,7 +69,7 @@ char* getPerm(int num){
 
 void printInode(inode *fInode){
    printf("File inode:\n"
-          "  uint16_t mode 0x%4x (%s)\n"
+          "  uint16_t mode 0x%04x (%s)\n"
           "  uint16_t links %d\n"
           "  uint16_t uid %d\n"
           "  uint16_t gid %d\n"
@@ -194,10 +194,12 @@ int main(int argc, char **argv){
          return EXIT_FAILURE;
       }
 
-      fwrite(sBlock, sizeof(superblock), 1, image);
+      fread(sBlock, sizeof(superblock), 1, image);
+
+      printf("sblock magic %04x\n", sBlock->magic);
 
       if (sBlock->magic != MINIX_MAGIC){
-         printf("Bad magic number. (0x%4x)\n", sBlock->magic);
+         printf("Bad magic number. (0x%04x)\n", sBlock->magic);
          printf("This doesn't look like a MINIX filesystem.\n");
          return EXIT_FAILURE;
       }
