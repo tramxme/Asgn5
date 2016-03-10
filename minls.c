@@ -225,7 +225,8 @@ int main(int argc, char **argv){
       }
       else{
          /* Get the file system */
-         if (( res = fseek(image, PART_OFFSET + pt[part].lFirst * SECTOR_SIZE, SEEK_SET)) < 0){
+         if (( res = fseek(image, PART_OFFSET + pt[part].lFirst * SECTOR_SIZE
+                     , SEEK_SET)) < 0){
             perror("fseek failed");
             return EXIT_FAILURE;
          }
