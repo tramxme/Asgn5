@@ -6,12 +6,14 @@
 #define MAX_NAME_LEN    60
 #define SUPERBLOCK_OFFSET 1024
 #define FORMAT_WIDTH    9
+#define SB_FORMAT_WIDTH 20
+#define MAGIC_FORMAT_WIDTH 14
 
 /*Minix Constants*/
 #define BOOT_MAGIC      0x80
 #define MINIX_PART      0x81
 #define BYTE510         510
-#define BYTE511 i       511
+#define BYTE511         511
 #define VALID_PT_510    0x55
 #define VALID_PT_511    0xAA
 #define PART_OFFSET     0x1BE
