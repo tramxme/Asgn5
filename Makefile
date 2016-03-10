@@ -15,3 +15,5 @@ minget: minget.o
 minget.o: minget.c
 	$(CC) $(FLAGS) -c minget.c -o minget.o
 
+clean:
+	rm *.o *.exe
