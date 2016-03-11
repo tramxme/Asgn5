@@ -150,7 +150,7 @@ dir_entry *getDir(FILE *in, uint32_t offset, superblock *sb,
 int hasFile(dir_entry *dirEntry, int dirNum, char *name){
    int i;
    for(i = 0; i < dirNum; i++){
-      if (dirEntry[i].inode != 0 && strcmp((char *) dirEntry[i].name, name) == 0){
+      if (dirEntry[i].inode != 0 && !strcmp((char *) dirEntry[i].name, name)){
          return dirEntry[i].inode;
       }
    }
@@ -191,7 +191,8 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
             {
                free(dirEntry);
                dirNum = curInode->size/DIR_ENTRY_SIZE;
-               dirEntry = getDir(in, offset, sb, curInode->zone[0], zonesize, dirNum);
+               dirEntry = getDir(in, offset, sb, curInode->zone[0], zonesize,
+                     dirNum);
             }
          }
          else{
