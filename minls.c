@@ -134,8 +134,6 @@ void printDir(FILE *in, uint32_t offset, superblock *sb,  dir_entry* dirEntry,
  * seeking using zone number */
 dir_entry *getDir(FILE *in, uint32_t offset, superblock *sb,
       uint32_t zoneNum, uint16_t zonesize, int dirNum){
-   int i = 0, res;
-
    dir_entry *dirEntry = calloc(sizeof(dir_entry), dirNum);
 
    fseek(in, offset + zoneNum * zonesize, SEEK_SET);
@@ -163,7 +161,6 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
    int dirNum = fInode->size/DIR_ENTRY_SIZE;
    dir_entry *dirEntry = getDir(in, offset, sb, fInode->zone[0],
          zonesize, dirNum);
-   int i = 0, res;
    char *tempPath, *ptr = calloc(strlen(path), 1);
    uint32_t inodeNum;
    int isDir = 1;
