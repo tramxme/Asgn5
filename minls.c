@@ -178,7 +178,7 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
          inodeNum = hasFile(dirEntry, dirNum, tempPath);
          if (inodeNum != EXIT_FAILURE){
             curInode = getInode(in, offset, sb, inodeNum);
-            printf("temppath %s - inodeNum %d\n", tempPath, inodeNum);
+    //        printf("temppath %s - inodeNum %d\n", tempPath, inodeNum);
 
             if (curInode->mode & REG_FILE_MASK){
                isDir = 0;
