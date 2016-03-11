@@ -1,5 +1,5 @@
 CC = gcc
-FLAGS = -Wall -Werror -g
+FLAGS = -Wall -Werror
 
 all: minls minget
 

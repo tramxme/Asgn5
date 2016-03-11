@@ -3,115 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <time.h>
-#include "minfs.h"
-
-/* This function checks if a partition Table is valid */
-int validPT(FILE *image, uint32_t offset){
-   uint8_t b510, b511;
-   int res;
-
-   if ((res = fseek(image, offset, SEEK_SET)) < 0){
-      perror("fseek failed");
-      return EXIT_FAILURE;
-   }
-
-   fread(&b510, sizeof(uint8_t), 1, image);
-   fread(&b511, sizeof(uint8_t), 1, image);
-
-   return b510 == VALID_PT_510 && b511 == VALID_PT_511;
-}
-
-/*This function returns the inode structure at a given inode number*/
-inode *getInode(FILE *in, uint32_t offset, superblock *sb, uint32_t inode_num) {
-   inode *curr = calloc(sizeof(inode), 1);
-
-   /*Seek to requested inode*/
-   fseek(in, offset + (sb->i_blocks + sb->z_blocks + 2) * sb->blocksize +
-          (inode_num - 1) * INODE_SIZE, SEEK_SET);
-   fread(curr, sizeof(inode), 1, in);
-
-   return curr;
-}
-
-void printStuff(char *str, uint32_t num, int width){
-   printf("  %s %*u\n", str, width - (int) strlen(str), num);
-}
-
-/* This function returns the information contain in the superblock */
-void printSuperblock(superblock *sp){
-   uint16_t zonesize = sp->blocksize << sp->log_zone_size;
-
-   printf("Superblock Contents:\n");
-   printf("Stored Fields:\n");
-   printStuff("ninodes", sp->ninodes, SB_FORMAT_WIDTH);
-   printStuff("i_blocks", sp->i_blocks, SB_FORMAT_WIDTH);
-   printStuff("z_blocks", sp->z_blocks, SB_FORMAT_WIDTH);
-   printStuff("firstdata", sp->firstdata, SB_FORMAT_WIDTH);
-   printf("  %s %*d (zone size: %d)\n", "log_zone_size",
-         SB_FORMAT_WIDTH - (int) (strlen("log_zone_size")),
-           sp->log_zone_size, zonesize);
-   printStuff("max_file", sp->max_file, SB_FORMAT_WIDTH);
-   printf("  %-*s %#04x\n", MAGIC_FORMAT_WIDTH, "magic", sp->magic);
-   printStuff("zones", sp->zones, SB_FORMAT_WIDTH);
-   printStuff("blocksize", sp->blocksize, SB_FORMAT_WIDTH);
-   printStuff("subversion", sp->subversion, SB_FORMAT_WIDTH);
-}
-
-/* This function returns the permission string */
-char *getPerm(int num){
-   char *res = calloc(11,1);
-   int i = 0;
-
-   res[i++] = num & DIR_MASK ? 'd' : '-';
-   res[i++] = num & OWNER_RD_MASK ? 'r' : '-';
-   res[i++] = num & OWNER_WR_MASK ? 'w' : '-';
-   res[i++] = num & OWNER_EXE_MASK ? 'x' : '-';
-   res[i++] = num & GROUP_RD_MASK ? 'r' : '-';
-   res[i++] = num & GROUP_WR_MASK ? 'w' : '-';
-   res[i++] = num & GROUP_EXE_MASK ? 'x' : '-';
-   res[i++] = num & OTHER_RD_MASK ? 'r' : '-';
-   res[i++] = num & OTHER_WR_MASK ? 'w' : '-';
-   res[i++] = num & OTHER_EXE_MASK ? 'x' : '-';
-   res[i] = '\0';
-
-   return res;
-}
-
-/* This function prints the information contain in the inode */
-void printInode(inode *fInode){
-   char *perm = getPerm(fInode->mode);
-   time_t curtime;
-
-   time(&curtime);
-   printf("File inode:\n"
-         "  uint16_t mode 0x%04x (%s)\n"
-         "  uint16_t links %d\n"
-         "  uint16_t uid %d\n"
-         "  uint16_t gid %d\n"
-         "  uint32_t size %d\n"
-         "  uint32_t atime %u --- %s" //TODO Add time
-         "  uint32_t mtime %u --- %s" //TODO Add time
-         "  uint32_t ctime %u --- %s\n" //TODO Add time
-         "  Direct zones:\n"
-         "              zone[0]   = %d\n"
-         "              zone[1]   = %d\n"
-         "              zone[2]   = %d\n"
-         "              zone[3]   = %d\n"
-         "              zone[4]   = %d\n"
-         "              zone[5]   = %d\n"
-         "              zone[6]   = %d\n"
-         "  uint32_t    indirect %d\n"
-         "  uint32_t    double %d\n"
-         , fInode->mode, perm, fInode->links, fInode->uid,
-         fInode-> gid, fInode->size, fInode->atime, ctime(&curtime),
-         fInode->mtime, ctime(&curtime), fInode-> ctime, ctime(&curtime),
-         fInode->zone[0], fInode->zone[1], fInode->zone[2], fInode->zone[3],
-         fInode->zone[4], fInode->zone[5], fInode->zone[6],
-         fInode->indirect, fInode->two_indirect);
-
-         free(perm);
-}
+#include "minfs.c"
 
 /* This function prints the directory info */
 void printDir(FILE *in, uint32_t offset, superblock *sb,  dir_entry* dirEntry,
@@ -130,38 +22,49 @@ void printDir(FILE *in, uint32_t offset, superblock *sb,  dir_entry* dirEntry,
    }
 }
 
-/* This function return a pointer to a list of directory entries
- * seeking using zone number */
-dir_entry *getDir(FILE *in, uint32_t offset, superblock *sb,
-      uint32_t zoneNum, uint16_t zonesize, int dirNum){
-   dir_entry *dirEntry = calloc(sizeof(dir_entry), dirNum);
+uint32_t *getZones(FILE *in, uint32_t offset, uint16_t blocksize,
+      inode *Inode, uint32_t numOfZones, uint32_t zonesize){
+   int idx;
 
-   fseek(in, offset + zoneNum * zonesize, SEEK_SET);
-   fread(dirEntry, sizeof(dir_entry), dirNum, in);
-
-   return dirEntry;
-}
-
-/* This function check if a file in a list of directories
- * return the inode number or -1
- */
-int hasFile(dir_entry *dirEntry, int dirNum, char *name){
-   int i;
-   for(i = 0; i < dirNum; i++){
-      if (dirEntry[i].inode != 0 && !strcmp((char *) dirEntry[i].name, name)){
-         return dirEntry[i].inode;
-      }
+   uint32_t *zones = calloc(sizeof(uint32_t), numOfZones);
+   /* Direct zone*/
+   for (idx = 0; idx < DIRECT_ZONES; idx++){
+      zones[idx] = Inode->zone[idx];
    }
-   return EXIT_FAILURE;
+
+   /* Indirect */
+   if (numOfZones > DIRECT_ZONES &&
+         numOfZones < DIRECT_ZONES + blocksize/sizeof(uint32_t)){
+      fseek(in, offset + Inode->indirect * zonesize, SEEK_SET);
+      fread(&zones[idx], sizeof(uint32_t), numOfZones - DIRECT_ZONES, in);
+      idx += numOfZones - DIRECT_ZONES;
+   }
+
+   /* Double indirect */
+   if (numOfZones > DIRECT_ZONES + blocksize/sizeof(uint32_t)){
+   }
+
+   return zones;
 }
 
 int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
-   inode *fInode, uint16_t zonesize){
+   inode *fInode, uint32_t zonesize){
 
    int dirNum = fInode->size/DIR_ENTRY_SIZE;
-   dir_entry *dirEntry = getDir(in, offset, sb, fInode->zone[0],
+   int idx;
+   uint32_t numZones = fInode->size / zonesize;
+
+   if (fInode->size % zonesize){
+      numZones += 1;
+   }
+
+
+   for (idx = 0; idx < numZones; idx++){
+   }
+
+   dir_entry *dirEntry = getDir(in, offset, fInode->zone[0],
          zonesize, dirNum);
-   char *tempPath, *ptr = calloc(strlen(path), 1);
+   char *tempPath, *ptr = calloc(strlen(path) + 1, 1);
    uint32_t inodeNum;
    int isDir = 1;
    inode *curInode;
@@ -169,16 +72,18 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
    strcpy(ptr, path);
 
    if (strcmp(path, "/")){
-      strsep(&path, "/");
+      if (path[0] == '/'){
+         strsep(&path, "/");
+      }
       while ((tempPath = strsep(&path, "/")) != '\0'){
+         //printf("path %s\n", tempPath);
          if (!isDir){
             return EXIT_FAILURE;
          }
 
          inodeNum = hasFile(dirEntry, dirNum, tempPath);
-         if (inodeNum != EXIT_FAILURE){
+         if (inodeNum != -1){
             curInode = getInode(in, offset, sb, inodeNum);
-    //        printf("temppath %s - inodeNum %d\n", tempPath, inodeNum);
 
             if (curInode->mode & REG_FILE_MASK){
                isDir = 0;
@@ -188,7 +93,7 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
             {
                free(dirEntry);
                dirNum = curInode->size/DIR_ENTRY_SIZE;
-               dirEntry = getDir(in, offset, sb, curInode->zone[0], zonesize,
+               dirEntry = getDir(in, offset, curInode->zone[0], zonesize,
                      dirNum);
             }
          }
@@ -208,6 +113,7 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
    }
 
    free(dirEntry);
+   free(ptr);
 
    return 0;
 }
@@ -230,13 +136,13 @@ int main(int argc, char **argv){
    pt_entry *subpt = calloc(sizeof(pt_entry), 4);
    superblock *sBlock = calloc(sizeof(superblock), 1);
    inode *Inode = calloc(sizeof(inode), 1);
-   uint16_t zonesize;
+   uint32_t zonesize;
    uint32_t offset = 0;
 
    //TODO: error catching when necessary info is not provided
    if (argc == 1){
       printf("%s\n", usage);
-      return EXIT_FAILURE;
+      return 0;
    }
    else {
       while ((c = getopt(argc, argv, "vhp:s:")) > 0){
@@ -379,18 +285,18 @@ int main(int argc, char **argv){
       strcpy(path, "/\0");
    }
 
-   ptr = calloc(strlen(path), 1);
-   strcpy(ptr, path);
-   if ((res = printFiles(image, sBlock, offset, ptr, Inode, zonesize)) != 0){
-      fprintf(stderr, "%s: File not found\n", path);
-      return EXIT_FAILURE;
-   }
-
    if (v){
       printf("\n");
       printSuperblock(sBlock);
       printf("\n");
       printInode(Inode);
+   }
+
+   ptr = calloc(strlen(path) + 1, 1);
+   strcpy(ptr, path);
+   if ((res = printFiles(image, sBlock, offset, ptr, Inode, zonesize)) != 0){
+      fprintf(stderr, "%s: File not found\n", path);
+      return EXIT_FAILURE;
    }
 
    free(pt);
