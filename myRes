@@ -57,9 +57,9 @@ File inode:
   uint16_t uid 2
   uint16_t gid 2
   uint32_t size 384
-  uint32_t atime 1141098157 --- Thu Mar 10 19:54:03 2016
-  uint32_t mtime 1141098157 --- Thu Mar 10 19:54:03 2016
-  uint32_t ctime 1141098157 --- Thu Mar 10 19:54:03 2016
+  uint32_t atime 1141098157 --- Thu Mar 10 20:02:02 2016
+  uint32_t mtime 1141098157 --- Thu Mar 10 20:02:02 2016
+  uint32_t ctime 1141098157 --- Thu Mar 10 20:02:02 2016
 
   Direct zones:
               zone[0]   = 16
@@ -109,9 +109,9 @@ File inode:
   uint16_t uid 2
   uint16_t gid 2
   uint32_t size 640
-  uint32_t atime 1141096963 --- Thu Mar 10 19:54:03 2016
-  uint32_t mtime 1141096883 --- Thu Mar 10 19:54:03 2016
-  uint32_t ctime 1141096883 --- Thu Mar 10 19:54:03 2016
+  uint32_t atime 1141096963 --- Thu Mar 10 20:02:02 2016
+  uint32_t mtime 1141096883 --- Thu Mar 10 20:02:02 2016
+  uint32_t ctime 1141096883 --- Thu Mar 10 20:02:02 2016
 
   Direct zones:
               zone[0]   = 16
@@ -175,7 +175,7 @@ Running the application
        Cmd: minls -p 0 -s 2 HardDisk                       
  21 -- subpart., w/filename                                             ok.
        Cmd: minls -p 0 -s 2 HardDisk /home/pnico/Message   
- 22 -- subpart., w/bad filename                                         ok.
+ 22 -- subpart., w/bad filename                                     FAILED.
        Cmd: minls -p 0 -s 0 HardDisk /home/pnico/Message   
  23 -- directories                                                      ok.
        Cmd: minls Files /Files                             
@@ -205,7 +205,7 @@ Running the application
        Cmd: minls Files /Deleted                           
  36 -- directories-ok file                                              ok.
        Cmd: minls Files /Deleted/File-10                   
- 37 -- directories-deleted file                                         ok.
+ 37 -- directories-deleted file                                     FAILED.
        Cmd: minls Files /Deleted/File-05                   
  38 -- 1k blocks. dir.                                                  ok.
        Cmd: minls SmallBlocks--1k                          
@@ -369,7 +369,7 @@ Running the application
        Cmd: minls -p 2 -s 0 BrokenStuff                    
 118 -- minget: partition table with bad magic                       FAILED.
        Cmd: minget -p 2 -s 0 BrokenStuff README /dev/stdout 
-119 -- minls:  trying to traverse a file                                ok.
+119 -- minls:  trying to traverse a file                            FAILED.
        Cmd: minls WeirdStuff NotADir/This_file_does_not_exist 
 120 -- minget: trying to traverse a file                            FAILED.
        Cmd: minget WeirdStuff NotADir/This_file_does_not_exist /dev/stdout 
@@ -378,20 +378,31 @@ Running the application
 122 -- minget: trying to get a directory                            FAILED.
        Cmd: minget TestImage src /dev/stdout                
    =======================================================================
-Failure. (51/122 passed)
+Failure. (48/122 passed)
 
 Actual ouput from tests and detailed results are below.
 
 
 
 -----------------
+22) subpart., w/bad filename:
+     minls -p 0 -s 0 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
 30) directories:
      minls /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files/Message 
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 /DeepPaths/a/b/c/d/e/i/j/k/Files/Message: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rw-r--r--        47 /DeepPaths/a/b/c/d/e/i/j/k/Files/Message^M
+---
+> /DeepPaths/a/b/c/d/e/i/j/k/Files/Message: File not found^M
 
 
 -----------------
@@ -1821,20 +1832,34 @@ Diffs: ( < Reference > Testfile ):
 34) indirect directory (file):
      minls /home/pn-cs453/Given/Asgn5/Images/BigIndirectDirs Level1/Level2/LastFile 
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 Level1/Level2/LastFile: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rw-r--r--       113 Level1/Level2/LastFile^M
+---
+> Level1/Level2/LastFile: File not found^M
+
+
+-----------------
+37) directories-deleted file:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Deleted/File-05 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
 
 
 -----------------
 39) 1k blocks. file.:
      minls /home/pn-cs453/Given/Asgn5/Images/SmallBlocks--1k DirTwo/FileTwo  
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 DirTwo/FileTwo: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x     20596 DirTwo/FileTwo^M
+---
+> DirTwo/FileTwo: File not found^M
 
 
 -----------------
@@ -1855,20 +1880,26 @@ Diffs: ( < Reference > Testfile ):
 43) 64k zones. file:
      minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k DirTwo/FileOne 
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 DirTwo/FileOne: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x      6552 DirTwo/FileOne^M
+---
+> DirTwo/FileOne: File not found^M
 
 
 -----------------
 44) 64k zones. longpath:
      minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k /./.././../DirTwo/FileOne 
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 /./.././../DirTwo/FileOne: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x      6552 /./.././../DirTwo/FileOne^M
+---
+> /./.././../DirTwo/FileOne: File not found^M
 
 
 -----------------
@@ -2233,10 +2264,13 @@ Diffs: ( < Reference > Testfile ):
 87) 1k blocks. file.:
      minls /home/pn-cs453/Given/Asgn5/Images/SmallBlocks--1k DirTwo/FileTwo  
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 DirTwo/FileTwo: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x     20596 DirTwo/FileTwo^M
+---
+> DirTwo/FileTwo: File not found^M
 
 
 -----------------
@@ -2257,20 +2291,26 @@ Diffs: ( < Reference > Testfile ):
 91) 64k zones. file:
      minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k DirTwo/FileOne 
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 DirTwo/FileOne: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x      6552 DirTwo/FileOne^M
+---
+> DirTwo/FileOne: File not found^M
 
 
 -----------------
 92) 64k zones. longpath:
      minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k /./.././../DirTwo/FileOne 
 -----------------
-Program exited with bad status: 256
-
 Test program output:
 /./.././../DirTwo/FileOne: File not found^M
+Diffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x      6552 /./.././../DirTwo/FileOne^M
+---
+> /./.././../DirTwo/FileOne: File not found^M
 
 
 -----------------
@@ -2281,7 +2321,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/94 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/94 and testminfs.29281 differ
 
 
 -----------------
@@ -2292,7 +2332,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/95 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/95 and testminfs.29281 differ
 
 
 -----------------
@@ -2303,7 +2343,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/96 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/96 and testminfs.29281 differ
 
 
 -----------------
@@ -2314,7 +2354,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/97 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/97 and testminfs.29281 differ
 
 
 -----------------
@@ -2325,7 +2365,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/99 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/99 and testminfs.29281 differ
 
 
 -----------------
@@ -2336,7 +2376,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/100 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/100 and testminfs.29281 differ
 
 
 -----------------
@@ -2347,7 +2387,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/101 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/101 and testminfs.29281 differ
 
 
 -----------------
@@ -2358,7 +2398,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/102 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/102 and testminfs.29281 differ
 
 
 -----------------
@@ -2369,7 +2409,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/103 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/103 and testminfs.29281 differ
 
 
 -----------------
@@ -2380,7 +2420,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/104 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/104 and testminfs.29281 differ
 
 
 -----------------
@@ -2391,7 +2431,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/105 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/105 and testminfs.29281 differ
 
 
 -----------------
@@ -2402,7 +2442,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/106 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/106 and testminfs.29281 differ
 
 
 -----------------
@@ -2413,7 +2453,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/107 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/107 and testminfs.29281 differ
 
 
 -----------------
@@ -2424,7 +2464,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/108 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/108 and testminfs.29281 differ
 
 
 -----------------
@@ -2435,7 +2475,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/109 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/109 and testminfs.29281 differ
 
 
 -----------------
@@ -2446,7 +2486,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/110 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/110 and testminfs.29281 differ
 
 
 -----------------
@@ -2457,7 +2497,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/111 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/111 and testminfs.29281 differ
 
 
 -----------------
@@ -2468,7 +2508,7 @@ Test program output:
  --- Output limited to 10 lines. (There would be too much.) ---
 Diffs: ( < Reference > Testfile ):
  --- Output limited to 10 lines. (There would be too much.) ---
-Binary files /home/pn-cs453/Given/Asgn5/Expected/112 and testminfs.23560 differ
+Binary files /home/pn-cs453/Given/Asgn5/Expected/112 and testminfs.29281 differ
 
 
 -----------------
@@ -2490,6 +2530,14 @@ Binary files /home/pn-cs453/Given/Asgn5/Expected/112 and testminfs.23560 differ
 -----------------
 118) minget: partition table with bad magic:
      minget -p 2 -s 0 /home/pn-cs453/Given/Asgn5/Images/BrokenStuff README /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+119) minls:  trying to traverse a file:
+     minls /home/pn-cs453/Given/Asgn5/Images/WeirdStuff NotADir/This_file_does_not_exist 
 -----------------
  This test was expected to fail, but reports success.
  Perhaps a bad exit status?
