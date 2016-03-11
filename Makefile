@@ -1,7 +1,7 @@
 CC = gcc
 FLAGS = -Wall -Werror -g
 
-all: minls minget
+all: clean minls minget
 
 minls: minls.o
 	$(CC) $(FLAGS) minls.o -o minls

@@ -23,8 +23,9 @@ int validPT(FILE *image, uint32_t offset){
 }
 
 /*This function returns the inode structure at a given inode number*/
-inode * getInode(FILE *in, int offset, superblock *sb, uint32_t inode_num) {
+inode *getInode(FILE *in, uint32_t offset, superblock *sb, uint32_t inode_num) {
    inode *curr = calloc(sizeof(inode), 1);
+
    /*Seek to requested inode*/
    fseek(in, offset + (sb->i_blocks + sb->z_blocks + 2) * sb->blocksize +
           (inode_num - 1) * INODE_SIZE, SEEK_SET);
@@ -112,40 +113,103 @@ void printInode(inode *fInode){
          free(perm);
 }
 
-/* This functions check if a filename is in the directory
- * It return -1 if the filename does not exist, otherwise return inode number */
-
-int printFiles(FILE *in, superblock *sb, int offset, char *path,
-   inode *fInode, uint16_t zonesize){
+/* This function prints the directory info */
+void printDir(FILE *in, uint32_t offset, superblock *sb,  dir_entry* dirEntry,
+      int dirNum){
    inode *currInode;
-   int i = 0, res;
+   int i;
 
-   printf("%s:\n", path);
-
-   dir_entry *dirEntry = calloc(sizeof(dir_entry), fInode->size/DIR_ENTRY_SIZE);
-
-   /* Root directory */
-   if ((res = fseek(in, offset + fInode->zone[0] * zonesize, SEEK_SET)) < 0){
-      perror("fseek failed");
-      return EXIT_FAILURE;
-   }
-
-   if ((res = fread(dirEntry, sizeof(dir_entry),
-               fInode->size/DIR_ENTRY_SIZE, in)) < 0){
-      perror("fread failed");
-      return EXIT_FAILURE;
-   }
-
-   for(i = 0; i < fInode->size/DIR_ENTRY_SIZE; i++){
+   for(i = 0; i < dirNum; i++){
+      //printf("inode %d - name %s\n", dirEntry[i].inode, dirEntry[i].name);
       if (dirEntry[i].inode != 0){
          currInode = getInode(in, offset, sb, dirEntry[i].inode);
          printf("%s %*d %s\n", getPerm(currInode->mode), FORMAT_WIDTH,
                currInode->size, dirEntry[i].name);
+         free(currInode);
+      }
+   }
+}
+
+/* This function return a pointer to a list of directory entries
+ * seeking using zone number */
+dir_entry *getDir(FILE *in, uint32_t offset, superblock *sb,
+      uint32_t zoneNum, uint16_t zonesize, int dirNum){
+   int i = 0, res;
+
+   dir_entry *dirEntry = calloc(sizeof(dir_entry), dirNum);
+
+   fseek(in, offset + zoneNum * zonesize, SEEK_SET);
+   fread(dirEntry, sizeof(dir_entry), dirNum, in);
+
+   return dirEntry;
+}
+
+/* This function check if a file in a list of directories
+ * return the inode number or -1
+ */
+int hasFile(dir_entry *dirEntry, int dirNum, char *name){
+   int i;
+   for(i = 0; i < dirNum; i++){
+      if (dirEntry[i].inode != 0 && strcmp((char *) dirEntry[i].name, name) == 0){
+         return dirEntry[i].inode;
+      }
+   }
+   return EXIT_FAILURE;
+}
+
+int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
+   inode *fInode, uint16_t zonesize){
+
+   int dirNum = fInode->size/DIR_ENTRY_SIZE;
+   dir_entry *dirEntry = getDir(in, offset, sb, fInode->zone[0],
+         zonesize, dirNum);
+   int i = 0, res;
+   char *tempPath, *ptr = calloc(strlen(path), 1);
+   uint32_t inodeNum;
+   int isDir = 1;
+   inode *curInode;
+
+   strcpy(ptr, path);
+
+   if (strcmp(path, "/")){
+      strsep(&path, "/");
+      while ((tempPath = strsep(&path, "/")) != '\0'){
+         if (!isDir){
+            return EXIT_FAILURE;
+         }
+
+         inodeNum = hasFile(dirEntry, dirNum, tempPath);
+         if (inodeNum != EXIT_FAILURE){
+            //printf("temppath %s - inodeNum %d\n", tempPath, inodeNum);
+            curInode = getInode(in, offset, sb, inodeNum);
+
+            if (curInode->mode & REG_FILE_MASK){
+               isDir = 0;
+            }
+
+            if (isDir)
+            {
+               free(dirEntry);
+               dirNum = curInode->size/DIR_ENTRY_SIZE;
+               dirEntry = getDir(in, offset, sb, curInode->zone[0], zonesize, dirNum);
+            }
+         }
+         else{
+            return EXIT_FAILURE;
+         }
       }
    }
 
+   if (isDir){
+      printDir(in, offset, sb, dirEntry, dirNum);
+   }
+   else {
+      printf("%s %*d %s\n", getPerm(curInode->mode), FORMAT_WIDTH,
+            curInode->size, ptr);
+   }
+
    free(dirEntry);
-   free(currInode);
+
    return 0;
 }
 
@@ -316,7 +380,11 @@ int main(int argc, char **argv){
       strcpy(path, "/\0");
    }
 
-   printFiles(image, sBlock, offset, path, Inode, zonesize);
+   strcpy(ptr, path);
+   if ((res = printFiles(image, sBlock, offset, ptr, Inode, zonesize)) != 0){
+      fprintf(stderr, "%s: File not found\n", path);
+      return EXIT_FAILURE;
+   }
 
    if (v){
       printf("\n");
