@@ -378,6 +378,7 @@ int main(int argc, char **argv){
       strcpy(path, "/\0");
    }
 
+   ptr = calloc(strlen(path), 1);
    strcpy(ptr, path);
    if ((res = printFiles(image, sBlock, offset, ptr, Inode, zonesize)) != 0){
       fprintf(stderr, "%s: File not found\n", path);
@@ -392,6 +393,7 @@ int main(int argc, char **argv){
    }
 
    free(pt);
+   free(ptr);
    free(subpt);
    free(sBlock);
    free(Inode);
