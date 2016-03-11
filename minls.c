@@ -17,6 +17,10 @@ void printDir(FILE *in, uint32_t offset, superblock *sb,  dir_entry* dirEntry,
       /* Validate inode number */
       if (dirEntry[i].inode != 0){
          currInode = getInode(in, offset, sb, dirEntry[i].inode);
+	 if (currInode == NULL) {
+            fprintf(stderr, "getInode failed. Unable to print files.\n");
+	    return;
+	 }
          printf("%s %*d %s\n", getPerm(currInode->mode), FORMAT_WIDTH,
                currInode->size, dirEntry[i].name);
          free(currInode);
@@ -73,7 +77,15 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
    /* Get the root directory entry */
    dir_entry *dirEntry = getDir(in, offset, fInode->zone[0],
          zonesize, dirNum);
+   if (dirEntry = NULL) {
+      fprintf(stderr, "getDir failed. Unable to print files\n");
+      return EXIT_FAILURE;
+   }
    char *tempPath, *ptr = calloc(strlen(path) + 1, 1);
+   if (ptr == NULL) {
+      perror("calloc");
+      return EXIT_FAILURE;
+   }
    uint32_t inodeNum;
    int isDir = 1;
    inode *curInode;
@@ -108,6 +120,10 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
                dirNum = curInode->size/DIR_ENTRY_SIZE;
                dirEntry = getDir(in, offset, curInode->zone[0], zonesize,
                      dirNum);
+	       if (dirEntry == NULL) {
+	          fprintf(stderr, "getDir failed. Unable to print\n");
+		  return EXIT_FAILURE;
+	       }
             }
          }
          else{
