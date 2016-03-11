@@ -87,3 +87,15 @@ typedef struct __attribute__((__packed__)) directory_entry{
    uint32_t inode; /* inode number */
    unsigned char name[MAX_NAME_LEN]; /* Filename string */
 }dir_entry;
+
+/* Function prototypes */
+int validPT(FILE *image, uint32_t offset);
+inode *getInode(FILE *in, uint32_t offset, superblock *sb, uint32_t inode_num);
+dir_entry *getDir(FILE *in, uint32_t offset, uint32_t zoneNum,
+      uint32_t zonesize, int dirNum);
+int hasFile(dir_entry *dirEntry, int dirNum, char *name);
+void printStuff(char *str, uint32_t num, int width);
+void printSuperblock(superblock *sp);
+char *getPerm(int num);
+void printInode(inode *fInode);
+

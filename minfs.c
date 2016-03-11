@@ -16,38 +16,80 @@ int validPT(FILE *image, uint32_t offset){
       return EXIT_FAILURE;
    }
 
-   fread(&b510, sizeof(uint8_t), 1, image);
-   fread(&b511, sizeof(uint8_t), 1, image);
+   if ((res = fread(&b510, sizeof(uint8_t), 1, image)) != 1) {
+      if (ferror(image)) {
+         perror("fread failed");
+	 return EXIT_FAILURE;
+      }
+   }
+   if ((res = fread(&b511, sizeof(uint8_t), 1, image)) != 1) {
+      if (ferror(image)) {
+         perror("fread failed");
+	 return EXIT_FAILURE;
+      }
+   }
 
    return b510 == VALID_PT_510 && b511 == VALID_PT_511;
 }
 
 /*This function returns the inode structure at a given inode number*/
 inode *getInode(FILE *in, uint32_t offset, superblock *sb, uint32_t inode_num) {
+   int res;
    inode *curr = calloc(sizeof(inode), 1);
+   if (curr == NULL) {
+      perror("calloc");
+      return NULL;
+   }
 
    /*Seek to requested inode*/
-   fseek(in, offset + (sb->i_blocks + sb->z_blocks + 2) * sb->blocksize +
-          (inode_num - 1) * INODE_SIZE, SEEK_SET);
-   fread(curr, sizeof(inode), 1, in);
-
+   if ((res = fseek(in, offset +
+    (sb->i_blocks + sb->z_blocks + 2) * sb->blocksize +
+    (inode_num - 1) * INODE_SIZE, SEEK_SET) < 0)) {
+      perror("fseek failed");
+      free(curr);
+      return NULL;
+   }
+   if ((res = fread(curr, sizeof(inode), 1, in)) != 1) {
+      if (ferror(in)) {
+         perror("fread failed");
+	 free(curr);
+	 return NULL;
+      }
+   }
    return curr;
 }
 
-/* This function return a pointer to a list of directory entries
- * seeking using zone number */
+/* This function returns a pointer to a list of directory entries
+ * at a given zone number */
 dir_entry *getDir(FILE *in, uint32_t offset, uint32_t zoneNum,
       uint32_t zonesize, int dirNum){
+   int res;
    dir_entry *dirEntry = calloc(sizeof(dir_entry), dirNum);
 
-   fseek(in, offset + zoneNum * zonesize, SEEK_SET);
-   fread(dirEntry, sizeof(dir_entry), dirNum, in);
+   if (dirEntry == NULL) {
+      perror("calloc");
+      return NULL;
+   }
+
+   /* Seek to requested zone */
+   if ((res = fseek(in, offset + zoneNum * zonesize, SEEK_SET)) < 0) {
+      perror("fseek failed");
+      free(dirEntry);
+      return NULL;
+   }
+   if ((res = fread(dirEntry, sizeof(dir_entry), dirNum, in)) != dirNum) {
+      if (ferror(in)) {
+         perror("fread failed");
+	 free(dirEntry);
+	 return NULL;
+      }
+   }
 
    return dirEntry;
 }
 
-/* This function check if a file in a list of directories
- * return the inode number or -1
+/* This function checks if a given file name is in a list of directory entries
+ * Returns the corresponding inode number if match found or -1 if not found
  */
 int hasFile(dir_entry *dirEntry, int dirNum, char *name){
    int i;
@@ -61,6 +103,7 @@ int hasFile(dir_entry *dirEntry, int dirNum, char *name){
    return -1;
 }
 
+/* Helper function to format print strings */
 void printStuff(char *str, uint32_t num, int width){
    printf("  %s %*u\n", str, width - (int) strlen(str), num);
 }
@@ -88,6 +131,10 @@ void printSuperblock(superblock *sp){
 /* This function returns the permission string */
 char *getPerm(int num){
    char *res = calloc(11,1);
+   if (res == NULL) {
+      perror("calloc");
+      return NULL;
+   }
    int i = 0;
 
    res[i++] = num & DIR_MASK ? 'd' : '-';
@@ -139,8 +186,4 @@ void printInode(inode *fInode){
 
          free(perm);
 }
-
-
-
-
 

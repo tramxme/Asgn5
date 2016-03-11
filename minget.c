@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include "minfs.c"
 
+/* This function prints a file's contents to stdout or 
+ * to a destination path if provided.
+ */
 int printFile(FILE *in, uint32_t offset, superblock *sb,
       inode *fInode, uint32_t zonesize,
       char *srcpath, char *dstPath){
@@ -194,9 +197,11 @@ int main(int argc, char **argv){
       }
    }
 
+   /* Get the superblock */
    fseek(image, SUPERBLOCK_OFFSET + offset, SEEK_SET);
    fread(sBlock, sizeof(superblock), 1, image);
 
+   /* Validate MINIX filesystem */
    if (sBlock->magic != MINIX_MAGIC){
       printf("Bad magic number. (1x%04x)\n", sBlock->magic);
       printf("This doesn't look like a MINIX filesystem.\n");
@@ -225,13 +230,13 @@ int main(int argc, char **argv){
    ptr = calloc(strlen(srcpath) + 1, 1);
    strcpy(ptr, srcpath);
 
+   /* Print the file */
    if (printFile(image, offset, sBlock,Inode, zonesize, ptr, dstpath) != 0){
       fprintf(stderr, "%s: Not a regular file\n", srcpath);
       return EXIT_FAILURE;
    }
 
-
-
+   /* Free allocated memory */
    free(pt);
    free(ptr);
    free(subpt);
