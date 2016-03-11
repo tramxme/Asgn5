@@ -1,0 +1,131 @@
+
+------------------------
+Looking for source files
+------------------------
+
+Found: minfs.h minget.c minls.c
+
+--------------------------------
+Checking for long lines (no program should have any lines > 80 chars)
+(run ~pnico/bin/longlines.pl on your files to check.)
+--------------------------------
+
+Line length ok.
+
+Found: Makefile
+
+------------------------------------
+Building the application: "make all"
+------------------------------------
+
+make all
+gcc -Wall -Werror -g -c minls.c -o minls.o
+gcc -Wall -Werror -g minls.o -o minls
+gcc -Wall -Werror -g -c minget.c -o minget.o
+gcc -Wall -Werror -g minget.o -o minget
+
+---------------
+checking for executables
+---------------
+
+----------------------
+Testing verbose behavior
+----------------------
+minls -v Images/TestImage
+./minls -v /home/pn-cs453/Given/Asgn5/Images/TestImage
+drwxrwxrwx       384 .
+drwxrwxrwx       384 ..
+-rw-r--r--     73991 Other
+drwxr-xr-x      3200 src
+-rw-r--r--        11 Hello
+
+Superblock Contents:
+Stored Fields:
+  ninodes           768
+  i_blocks            1
+  z_blocks            1
+  firstdata          16
+  log_zone_size       0 (zone size: 4096)
+  max_file   4294967295
+  magic          0x4d5a
+  zones             360
+  blocksize        4096
+  subversion          0
+
+File inode:
+  uint16_t mode 0x41ff (drwxrwxrwx)
+  uint16_t links 3
+  uint16_t uid 2
+  uint16_t gid 2
+  uint32_t size 384
+  uint32_t atime 1141098157 --- Thu Mar 10 19:30:06 2016
+  uint32_t mtime 1141098157 --- Thu Mar 10 19:30:06 2016
+  uint32_t ctime 1141098157 --- Thu Mar 10 19:30:06 2016
+
+  Direct zones:
+              zone[0]   = 16
+              zone[1]   = 0
+              zone[2]   = 0
+              zone[3]   = 0
+              zone[4]   = 0
+              zone[5]   = 0
+              zone[6]   = 0
+  uint32_t    indirect 0
+  uint32_t    double 0
+
+minls -v -p 0 Images/HardDisk
+./minls -v -p 0 /home/pn-cs453/Given/Asgn5/Images/HardDisk
+Bad magic number. (1x0000)
+This doesn't look like a MINIX filesystem.
+
+minls -v -p 0 -s 0 Images/HardDisk
+drwxrwxrwx       640 .
+drwxrwxrwx       640 ..
+drwxr-xr-x       128 usr
+drwxr-xr-x       128 tmp
+drwxr-xr-x      2624 bin
+drwxr-xr-x      1472 etc
+drwxr-xr-x       768 sbin
+drwxr-xr-x     14144 dev
+drwxr-xr-x       192 lib
+drwxr-xr-x       256 boot
+
+Superblock Contents:
+Stored Fields:
+  ninodes           768
+  i_blocks            1
+  z_blocks            1
+  firstdata          16
+  log_zone_size       0 (zone size: 4096)
+  max_file   4294967295
+  magic          0x4d5a
+  zones             360
+  blocksize        4096
+  subversion          0
+
+File inode:
+  uint16_t mode 0x41ff (drwxrwxrwx)
+  uint16_t links 10
+  uint16_t uid 2
+  uint16_t gid 2
+  uint32_t size 640
+  uint32_t atime 1141096963 --- Thu Mar 10 19:30:06 2016
+  uint32_t mtime 1141096883 --- Thu Mar 10 19:30:06 2016
+  uint32_t ctime 1141096883 --- Thu Mar 10 19:30:06 2016
+
+  Direct zones:
+              zone[0]   = 16
+              zone[1]   = 0
+              zone[2]   = 0
+              zone[3]   = 0
+              zone[4]   = 0
+              zone[5]   = 0
+              zone[6]   = 0
+  uint32_t    indirect 0
+  uint32_t    double 0
+
+
+------------------------
+Running the application 
+------------------------
+

@@ -1,0 +1,42 @@
+   =======================================================================
+  Test                                                          Status
+       Cmd: Prog Arguments                                
+   =======================================================================
+  1 -- Usage test                                                       ok.
+       Cmd: minls -h                                       
+  2 -- unparitioned, blank                                          FAILED.
+       Cmd: minls BlankDisk                                
+  3 -- unpartitioned, files                                         FAILED.
+       Cmd: minls TestImage                                
+  4 -- unpartitioned, bad superblock                                    ok.
+       Cmd: minls RandomDisk                               
+  5 -- partitioned, part 0                                          FAILED.
+       Cmd: minls -p0 Partitioned                          
+  6 -- partitioned, part 1                                          FAILED.
+       Cmd: minls -p1 Partitioned                          
+  7 -- partitioned, part 2                                          FAILED.
+       Cmd: minls -p2 Partitioned                          
+  8 -- partitioned, part 3                                          FAILED.
+       Cmd: minls -p3 Partitioned                          
+  9 -- partitioned, bad part                                            ok.
+       Cmd: minls -p5 Partitioned                          
+ 10 -- partitioned, no part                                             ok.
+       Cmd: minls Partitioned                              
+ 11 -- partitioned, not minix                                           ok.
+       Cmd: minls -p1 HardDisk                             
+ 12 -- subpart., good sub                                           FAILED.
+       Cmd: minls -p0 -s0 HardDisk                         
+ 13 -- subpart., bad sub                                                ok.
+       Cmd: minls -p0 -s1 HardDisk                         
+ 14 -- unpartitioned, w/filename                                        ok.
+       Cmd: minls TestImage /Hello                         
+ 15 -- partitioned, w/filename, p0                                      ok.
+       Cmd: minls -p0 Partitioned /Message                 
+ 16 -- partitioned, w/filename, p1                                      ok.
+       Cmd: minls -p1 Partitioned /Message                 
+ 17 -- partitioned, w/filename, p2                                      ok.
+       Cmd: minls -p2 Partitioned /Message                 
+ 18 -- partitioned, w/filename, p3                                      ok.
+       Cmd: minls -p3 Partitioned /Message                 
+ 19 -- subpart., no filename s0                                     FAILED.
+       Cmd: minls -p0 -s0 HardDisk                         

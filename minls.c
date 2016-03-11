@@ -199,6 +199,7 @@ int printFiles(FILE *in, superblock *sb, uint32_t offset, char *path,
    }
 
    if (isDir){
+      printf("%s:\n", ptr);
       printDir(in, offset, sb, dirEntry, dirNum);
    }
    else {
